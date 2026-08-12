@@ -768,40 +768,39 @@ body {
 
   .app-container { padding: 0 10px; margin-top: 14px; margin-bottom: 24px; gap: 12px; }
 
-  /* Halaman 2: Tampilan Atas-Bawah di HP (Sesuai Screenshot) */
+  /* Halaman 2: Berdampingan (Side-by-Side) di HP */
   .preview-panel {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 8px;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 6px;
   }
   .preview-card {
-    padding: 14px;
-    gap: 8px;
+    padding: 8px 10px;
+    gap: 6px;
+    min-width: 0;
   }
   .preview-img-wrap {
-    min-height: 220px;
+    min-height: 180px;
   }
   .preview-img-wrap img {
-    height: 220px;
+    height: 180px;
   }
   .preview-label {
-    font-size: 0.72rem;
-    gap: 6px;
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    gap: 4px;
+    letter-spacing: 0.04em;
   }
-  .label-dot { width: 7px; height: 7px; }
-  .meta-filename { font-size: 0.78rem; }
-  .meta-size { font-size: 0.9rem; }
+  .label-dot { width: 6px; height: 6px; }
+  .meta-filename { font-size: 0.72rem; }
+  .meta-size { font-size: 0.82rem; }
   
   .vs-divider {
-    flex-direction: row;
-    padding-top: 0;
-    margin: 4px 0;
-    gap: 8px;
+    flex-direction: column;
+    padding-top: 55px;
+    gap: 4px;
     justify-content: center;
   }
-  .vs-line { width: 40px; height: 1px; }
-  .vs-text { font-size: 0.7rem; padding: 0 4px; }
+  .vs-line { width: 1px; height: 30px; }
+  .vs-text { font-size: 0.65rem; padding: 0; }
 
   /* Upload Zone */
   .upload-zone { padding: 24px 16px; gap: 8px; }
@@ -863,7 +862,7 @@ body {
 }
 
 @media (max-width: 380px) {
-  .preview-img-wrap { min-height: 200px; }
-  .preview-img-wrap img { height: 200px; }
+  .preview-img-wrap { min-height: 150px; }
+  .preview-img-wrap img { height: 150px; }
   .features-grid { grid-template-columns: 1fr; }
 }
