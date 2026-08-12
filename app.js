@@ -182,6 +182,9 @@ function loadImage(file) {
     if (heroSection) heroSection.classList.add("hidden");
     workspace.classList.remove("hidden");
 
+    // Simpan state ke IndexedDB agar tidak hilang saat refresh
+    saveStateToDB();
+
     showToast("✅ Gambar berhasil dimuat!");
   };
   reader.readAsDataURL(file);
@@ -265,6 +268,9 @@ function compressImage() {
 
           loadingOverlay.classList.add("hidden");
 
+          // Simpan state kompresi terbaru ke IndexedDB
+          saveStateToDB();
+
           if (blob.size >= originalFileSize) {
             showToast("💡 Ukuran tidak berkurang. Coba turunkan kualitas atau gambar sudah teroptimasi.");
           } else {
@@ -331,6 +337,9 @@ function resetToHome(toastMessage = "🔄 Siap untuk gambar baru!") {
   uploadCard.classList.remove("hidden");
   if (heroSection) heroSection.classList.remove("hidden");
 
+  // Hapus state simpanan dari IndexedDB
+  clearStateFromDB();
+
   window.scrollTo({ top: 0, behavior: "smooth" });
   showToast(toastMessage);
 }
@@ -355,3 +364,117 @@ document.addEventListener("keydown", (e) => {
    ============================================= */
 document.addEventListener("dragover", (e) => e.preventDefault());
 document.addEventListener("drop", (e) => e.preventDefault());
+
+/* =============================================
+   IndexedDB State Persistence (Refresh Recovery)
+   ============================================= */
+const DB_NAME = "ImageLiteDB";
+const STORE_NAME = "appState";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject("IndexedDB tidak didukung");
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveStateToDB() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const stateData = {
+      pageState: "workspace",
+      originalFile: originalFile,
+      compressedBlob: compressedBlob,
+      quality: qualitySlider ? qualitySlider.value : 75
+    };
+    store.put(stateData, "currentSession");
+  } catch (err) {
+    console.warn("IndexedDB saveState failed:", err);
+  }
+}
+
+async function clearStateFromDB() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.delete("currentSession");
+  } catch (err) {
+    console.warn("IndexedDB clearState failed:", err);
+  }
+}
+
+async function restoreStateFromDB() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get("currentSession");
+
+    request.onsuccess = () => {
+      const saved = request.result;
+      if (!saved || !saved.originalFile || saved.pageState !== "workspace") return;
+
+      originalFile     = saved.originalFile;
+      originalFileSize = saved.originalFile.size;
+
+      if (saved.quality && qualitySlider) {
+        qualitySlider.value = saved.quality;
+        if (qualityValue) qualityValue.textContent = saved.quality + "%";
+        updateSliderTrack(saved.quality);
+        presetBtns.forEach(btn => {
+          btn.classList.toggle("active", parseInt(btn.dataset.quality) === parseInt(saved.quality));
+        });
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalPreview.src = e.target.result;
+        originalFilename.textContent = saved.originalFile.name;
+        originalSize.textContent = formatSize(saved.originalFile.size);
+
+        uploadCard.classList.add("hidden");
+        if (heroSection) heroSection.classList.add("hidden");
+        workspace.classList.remove("hidden");
+
+        if (saved.compressedBlob) {
+          compressedBlob = saved.compressedBlob;
+          const compressedURL = URL.createObjectURL(saved.compressedBlob);
+          compressedPreview.src = compressedURL;
+          compressedPreview.style.display = "block";
+          resultPlaceholder.style.display = "none";
+
+          const outputMime = saved.compressedBlob.type;
+          const ext = outputMime === "image/png" ? "png" : "jpg";
+          const baseName = saved.originalFile.name.replace(/\.[^.]+$/, "");
+          compressedFilename.textContent = `${baseName}_lite.${ext}`;
+          compressedSize.textContent = formatSize(saved.compressedBlob.size);
+
+          const savings = savingsPercent(saved.originalFile.size, saved.compressedBlob.size);
+          statOriginal.textContent   = formatSize(saved.originalFile.size);
+          statCompressed.textContent = formatSize(saved.compressedBlob.size);
+          statSavings.textContent    = savings + "%";
+
+          statsCard.classList.remove("hidden");
+          statsCard.classList.add("visible");
+        }
+      };
+      reader.readAsDataURL(saved.originalFile);
+    };
+  } catch (err) {
+    console.warn("IndexedDB restoreState failed:", err);
+  }
+}
+
+// Otomatis pulihkan state jika halaman direfresh
+document.addEventListener("DOMContentLoaded", restoreStateFromDB);
