@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImageLite – Web Image Compressor</title>
+  <meta name="description" content="Kompres gambar JPG, JPEG, dan PNG langsung di browser. Gratis, cepat, tanpa upload ke server. Hemat ukuran file hingga 90%." />
+  <meta property="og:title" content="ImageLite – Web Image Compressor" />
+  <meta property="og:description" content="Kompres gambar langsung di browser — cepat, aman, dan gratis." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo" id="logo-btn" style="cursor: pointer;" title="Kembali ke Halaman Utama">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">Image<span class="logo-accent">Lite</span></span>
+      </div>
+      <p class="header-tagline">Kompres gambar tanpa keluar dari browser</p>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">🎓 Tugas Kuliah Friendly · 100% Browser · Gratis</div>
+    <h1 class="hero-title">Foto besar? <br /><span class="gradient-text">Jadikan ringan.</span></h1>
+    <p class="hero-subtitle">Upload JPG / PNG, pilih kualitas, compress dalam satu klik. Tidak ada data yang dikirim ke server.</p>
+  </section>
+
+  <!-- MAIN APP -->
+  <main class="app-container">
+
+    <!-- UPLOAD ZONE -->
+    <div class="card upload-card" id="upload-card">
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png" hidden />
+        <div class="upload-icon-wrap">
+          <div class="upload-icon">🖼️</div>
+        </div>
+        <p class="upload-title">Drag & Drop gambar di sini</p>
+        <p class="upload-subtitle">atau</p>
+        <button class="btn btn-primary" id="browse-btn">
+          <span>Pilih Gambar</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <p class="upload-hint">Mendukung JPG, JPEG, PNG</p>
+      </div>
+    </div>
+
+    <!-- WORKSPACE (hidden until image loaded) -->
+    <div class="workspace hidden" id="workspace">
+
+      <!-- PREVIEW PANEL -->
+      <div class="preview-panel">
+        <div class="card preview-card" id="original-card">
+          <div class="preview-label">
+            <span class="label-dot dot-original"></span>
+            Original
+          </div>
+          <div class="preview-img-wrap">
+            <img id="original-preview" src="" alt="Gambar Original" />
+          </div>
+          <div class="preview-meta">
+            <span class="meta-filename" id="original-filename">—</span>
+            <span class="meta-size" id="original-size">—</span>
+          </div>
+        </div>
+
+        <div class="vs-divider">
+          <div class="vs-line"></div>
+          <span class="vs-text">VS</span>
+          <div class="vs-line"></div>
+        </div>
+
+        <div class="card preview-card result-card" id="result-card">
+          <div class="preview-label">
+            <span class="label-dot dot-compressed"></span>
+            Compressed
+          </div>
+          <div class="preview-img-wrap">
+            <img id="compressed-preview" src="" alt="Gambar Terkompresi" />
+            <div class="result-placeholder" id="result-placeholder">
+              <div class="placeholder-icon">⏳</div>
+              <p>Hasil kompresi<br/>akan muncul di sini</p>
+            </div>
+          </div>
+          <div class="preview-meta">
+            <span class="meta-filename" id="compressed-filename">—</span>
+            <span class="meta-size" id="compressed-size">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="card controls-card">
+        <div class="controls-header">
+          <h2 class="controls-title">⚙️ Pengaturan Kompresi</h2>
+        </div>
+
+        <div class="quality-section">
+          <div class="quality-label-row">
+            <label for="quality-slider" class="quality-label">Kualitas Output</label>
+            <span class="quality-value" id="quality-value">75%</span>
+          </div>
+          <input type="range" id="quality-slider" class="quality-slider" min="1" max="100" value="75" />
+          <div class="quality-hints">
+            <span>🔥 Maksimal Hemat</span>
+            <span>✨ Kualitas Tinggi</span>
+          </div>
+          <div class="quality-presets">
+            <button class="preset-btn" data-quality="30" id="preset-low">Low (30%)</button>
+            <button class="preset-btn active" data-quality="75" id="preset-medium">Medium (75%)</button>
+            <button class="preset-btn" data-quality="90" id="preset-high">High (90%)</button>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-compress" id="compress-btn">
+            <span class="btn-compress-icon">⚡</span>
+            <span>Compress Image</span>
+          </button>
+          <button class="btn btn-ghost" id="reset-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.49"/></svg>
+            Ganti Foto
+          </button>
+        </div>
+      </div>
+
+      <!-- RESULT STATS (hidden until compressed) -->
+      <div class="card stats-card hidden" id="stats-card">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon">📁</div>
+            <div class="stat-label">Ukuran Asli</div>
+            <div class="stat-value" id="stat-original">—</div>
+          </div>
+          <div class="stat-arrow">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon">🗜️</div>
+            <div class="stat-label">Ukuran Setelah</div>
+            <div class="stat-value" id="stat-compressed">—</div>
+          </div>
+          <div class="stat-item stat-savings">
+            <div class="stat-icon">🎉</div>
+            <div class="stat-label">Penghematan</div>
+            <div class="stat-value savings-value" id="stat-savings">—</div>
+          </div>
+        </div>
+
+        <div class="stats-actions">
+          <button class="btn btn-download" id="download-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Gambar Terkompresi
+          </button>
+          <button class="btn btn-home" id="home-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Kembali ke Halaman Utama
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /workspace -->
+
+  </main>
+
+  <!-- FEATURES SECTION -->
+  <section class="features-section">
+    <div class="features-inner">
+      <h2 class="features-title">Mengapa ImageLite?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>100% Privat</h3>
+          <p>Gambar tidak pernah dikirim ke server. Semua proses terjadi di browser kamu.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Super Cepat</h3>
+          <p>Kompresi real-time menggunakan Canvas API. Tidak butuh koneksi internet.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>Kualitas Terjaga</h3>
+          <p>Pilih level kualitas sesuai kebutuhan — dari hemat maksimal hingga kualitas tinggi.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Semua Perangkat</h3>
+          <p>Berjalan di laptop, tablet, maupun smartphone tanpa install apapun.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <span>⚡</span> ImageLite
+      </div>
+      <p class="footer-text">Dibuat dengan ❤️ · 100% Open Source · Tidak ada tracking</p>
+      <p class="footer-tech">HTML · CSS · JavaScript · Canvas API</p>
+    </div>
+  </footer>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Sedang mengompres...</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
